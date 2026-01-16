@@ -46,6 +46,18 @@ Optional external lookup
 
 If you have an API key for an external provider, you can set the environment variable `NUMVERIFY_API_KEY` and the CLI will attempt a secondary lookup. Note: these providers often do not return a person's name.
 
+Twilio Lookup (caller name)
+----------------------------
+
+If you have a Twilio account, Twilio's Lookup API can return caller-name (CNAM) for some numbers/regions. This is a paid/opt-in feature and coverage varies by country. To enable Twilio lookups set these environment variables in your Render or local environment:
+
+```
+TWILIO_ACCOUNT_SID=your_sid
+TWILIO_AUTH_TOKEN=your_auth_token
+```
+
+Then the web UI and CLI will attempt a Twilio lookup when no local contact matches. If Twilio returns a caller name the app will show it.
+
 Privacy and legal
 -----------------
 

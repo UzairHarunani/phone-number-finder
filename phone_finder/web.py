@@ -38,12 +38,19 @@ def create_app(test_config=None):
                 if name:
                     result = {"found": True, "name": name}
                 else:
-                    key = os.environ.get("NUMVERIFY_API_KEY")
-                    ext = ExternalLookup(numverify_key=key)
-                    if key:
-                        ok, hint = ext.lookup_numverify(number, default_region=app.config["DEFAULT_REGION"])
-                        result = {"found": False}
+                    # Prefer Twilio caller-name lookup if credentials present
+                    sid = os.environ.get("TWILIO_ACCOUNT_SID")
+                    token = os.environ.get("TWILIO_AUTH_TOKEN")
+                    numverify_key = os.environ.get("NUMVERIFY_API_KEY")
+                    ext = ExternalLookup(numverify_key=numverify_key, twilio_sid=sid, twilio_token=token)
+
+                    # Try Twilio first (may return a person's name for some numbers / regions)
+                    ok, remote_name = ext.lookup_twilio(number, default_region=app.config["DEFAULT_REGION"])
+                    if ok and remote_name:
+                        result = {"found": True, "name": remote_name}
                     else:
+                        # Next, try NumVerify for hints if available
+                        ok2, hint = ext.lookup_numverify(number, default_region=app.config["DEFAULT_REGION"]) if numverify_key else (False, None)
                         result = {"found": False}
 
         return render_template("index.html", result=result, hint=hint, error=error, number=number)

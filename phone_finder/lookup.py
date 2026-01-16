@@ -62,10 +62,17 @@ def find_name_local(number: str, contacts: Dict[str, str], default_region: str =
 
 
 class ExternalLookup:
-    """A small adapter for optional external lookups (hooks)."""
+    """A small adapter for optional external lookups (hooks).
 
-    def __init__(self, numverify_key: Optional[str] = None):
+    Currently supports:
+    - NumVerify (validation/carrier hints)
+    - Twilio Lookup (caller-name when available; requires Twilio credentials and may be a paid lookup)
+    """
+
+    def __init__(self, numverify_key: Optional[str] = None, twilio_sid: Optional[str] = None, twilio_token: Optional[str] = None):
         self.numverify_key = numverify_key
+        self.twilio_sid = twilio_sid
+        self.twilio_token = twilio_token
 
     def lookup_numverify(self, number: str, default_region: str = "US") -> Tuple[bool, Optional[str]]:
         """Query NumVerify (if key provided).
@@ -94,5 +101,35 @@ class ExternalLookup:
                 hints.append(f"country={data['country_name']}")
             hint = "; ".join(hints) if hints else None
             return True, hint
+        except Exception:
+            return False, None
+
+    def lookup_twilio(self, number: str, default_region: str = "US") -> Tuple[bool, Optional[str]]:
+        """Query Twilio Lookup API for caller-name (if credentials provided).
+
+        Returns (success, name) where name is the caller name if Twilio returns it.
+        Requires TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN to be available (or passed in constructor).
+        """
+        sid = self.twilio_sid or os.environ.get("TWILIO_ACCOUNT_SID")
+        token = self.twilio_token or os.environ.get("TWILIO_AUTH_TOKEN")
+        if not sid or not token:
+            return False, None
+
+        try:
+            normalized = normalize_number(number, default_region)
+        except ValueError:
+            return False, None
+
+        url = f"https://lookups.twilio.com/v1/PhoneNumbers/{normalized}"
+        params = {"Type": "caller-name"}
+        try:
+            resp = requests.get(url, auth=(sid, token), params=params, timeout=8)
+            resp.raise_for_status()
+            data = resp.json()
+            caller = data.get("caller_name") or {}
+            name = caller.get("caller_name")
+            if name:
+                return True, name
+            return True, None
         except Exception:
             return False, None

@@ -13,6 +13,7 @@ def main(argv: Optional[list] = None) -> int:
     parser.add_argument("--contacts", default="sample_contacts.csv", help="Path to CSV contacts (name,phone)")
     parser.add_argument("--region", default="US", help="Default region for parsing numbers (e.g. US, GB)")
     parser.add_argument("--use-numverify", action="store_true", help="Attempt a NumVerify lookup if NUMVERIFY_API_KEY is set")
+    parser.add_argument("--use-twilio", action="store_true", help="Attempt a Twilio Lookup (caller-name) if TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN are set")
     args = parser.parse_args(argv)
 
     try:
@@ -25,6 +26,29 @@ def main(argv: Optional[list] = None) -> int:
     if name:
         print(f"Found locally: {name}")
         return 0
+
+    if args.use_twilio:
+        sid = os.environ.get("TWILIO_ACCOUNT_SID")
+        token = os.environ.get("TWILIO_AUTH_TOKEN")
+        ext = ExternalLookup(twilio_sid=sid, twilio_token=token)
+        ok, name = ext.lookup_twilio(args.number, default_region=args.region)
+        if ok and name:
+            print(f"Found via Twilio: {name}")
+            return 0
+        elif ok and name is None:
+            print("Twilio lookup returned no caller name for this number.")
+            return 1
+        else:
+            # fallback to NumVerify if requested
+            if args.use_numverify:
+                key = os.environ.get("NUMVERIFY_API_KEY")
+                ext = ExternalLookup(numverify_key=key, twilio_sid=sid, twilio_token=token)
+                ok, hint = ext.lookup_numverify(args.number, default_region=args.region)
+                if ok and hint:
+                    print(f"External lookup hint: {hint}")
+                    return 0
+            print("External lookup attempted but returned no identifying information.")
+            return 1
 
     if args.use_numverify:
         key = os.environ.get("NUMVERIFY_API_KEY")
