@@ -1,0 +1,43 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Phone Number Finder</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+      label { display:block; margin-bottom: .25rem; }
+      input[type="text"] { width: 100%; padding: .5rem; margin-bottom: .5rem; }
+      button { padding: .5rem 1rem; }
+      .result { margin-top: 1rem; padding: .75rem; border: 1px solid #ddd; background: #f9f9f9; }
+    </style>
+  </head>
+  <body>
+    <h1>Phone Number Finder</h1>
+    <form method="post">
+      <label for="number">Phone number</label>
+      <input id="number" name="number" type="text" placeholder="+1 415 555 2671" value="{{ number|e }}" required />
+      <button type="submit">Lookup</button>
+    </form>
+
+    {% if error %}
+      <div class="result" style="color: #900">{{ error }}</div>
+    {% endif %}
+
+    {% if result %}
+      <div class="result">
+        {% if result.found %}
+          <p>Found: <strong>{{ result.name }}</strong></p>
+        {% else %}
+          <p>No local match found.</p>
+          {% if hint %}
+            <p>External hint: {{ hint }}</p>
+          {% elif hint is none %}
+            <p>No external hint available.</p>
+          {% endif %}
+        {% endif %}
+      </div>
+    {% endif %}
+  </body>
+</html>

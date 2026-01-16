@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: phone-number-finder
+    env: python
+    plan: free
+    region: oregon
+    branch: main
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn "phone_finder.web:create_app()" --bind 0.0.0.0:$PORT --workers 2
+    autoDeploy: true
+    envVars:
+      - key: CONTACTS_PATH
+        value: sample_contacts.csv
+      - key: DEFAULT_REGION
+        value: US
