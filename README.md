@@ -58,6 +58,41 @@ TWILIO_AUTH_TOKEN=your_auth_token
 
 Then the web UI and CLI will attempt a Twilio lookup when no local contact matches. If Twilio returns a caller name the app will show it.
 
+Yelp business lookup
+---------------------
+
+You can also try to match numbers to businesses using the Yelp Fusion Phone Search API. Yelp can return a business name for a phone number (useful for businesses, not personal numbers). To enable Yelp lookups set the environment variable:
+
+```
+YELP_API_KEY=your_yelp_api_key
+```
+
+Then in the web UI the app will try Yelp first (when present) and fall back to Twilio or NumVerify hints. The CLI exposes `--use-yelp` to force a Yelp lookup.
+
+Get a Yelp API key at https://www.yelp.com/developers and keep the key secret (use env vars in Render or your host).
+
+Google Places phone lookup
+--------------------------
+
+Google Places supports finding businesses by phone number using the Find Place endpoint. This is useful for businesses and organizations (not personal numbers). To enable Google lookups set:
+
+```
+GOOGLE_MAPS_API_KEY=your_key_here
+```
+
+Then the web UI will prefer Google Places (when present) and fall back to Yelp / Twilio / NumVerify. The CLI exposes `--use-google` to force a Google lookup. Get an API key at https://developers.google.com/maps/documentation/places/web-service/get-api-key and secure it in your environment.
+
+OpenCorporates company lookup
+-----------------------------
+
+OpenCorporates maintains a global database of company records. You can try to match phone numbers to company records using their companies search endpoint. Coverage varies and matching by phone is best-effort. To enable OpenCorporates lookups set:
+
+```
+OPENCORPORATES_API_KEY=your_key_here
+```
+
+If you set this key the web UI will try OpenCorporates first for company matches, then fall back to Google/Yelp/Twilio/NumVerify. The CLI exposes `--use-opencorporates` to force a lookup. Get an API token at https://opencorporates.com/info/api and keep it secret.
+
 Privacy and legal
 -----------------
 

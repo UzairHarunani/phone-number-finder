@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request
 import os
 
-from .lookup import load_contacts_csv, find_name_local, ExternalLookup
+from .lookup import load_contacts_csv, find_name_local, ExternalLookup, get_number_info
 
 
 def create_app(test_config=None):
@@ -38,20 +38,43 @@ def create_app(test_config=None):
                 if name:
                     result = {"found": True, "name": name}
                 else:
-                    # Prefer Twilio caller-name lookup if credentials present
+                    # Prepare external lookup clients from environment
                     sid = os.environ.get("TWILIO_ACCOUNT_SID")
                     token = os.environ.get("TWILIO_AUTH_TOKEN")
                     numverify_key = os.environ.get("NUMVERIFY_API_KEY")
                     ext = ExternalLookup(numverify_key=numverify_key, twilio_sid=sid, twilio_token=token)
 
-                    # Try Twilio first (may return a person's name for some numbers / regions)
-                    ok, remote_name = ext.lookup_twilio(number, default_region=app.config["DEFAULT_REGION"])
-                    if ok and remote_name:
-                        result = {"found": True, "name": remote_name}
-                    else:
-                        # Next, try NumVerify for hints if available
-                        ok2, hint = ext.lookup_numverify(number, default_region=app.config["DEFAULT_REGION"]) if numverify_key else (False, None)
+                    oc_key = os.environ.get("OPENCORPORATES_API_KEY")
+                    yelp_key = os.environ.get("YELP_API_KEY")
+
+                    # Try providers in priority order until we find a name
+                    # 1) OpenCorporates (company)
+                    if oc_key:
+                        ok, remote_name = ext.lookup_opencorporates(number, default_region=app.config["DEFAULT_REGION"])
+                        if ok and remote_name:
+                            result = {"found": True, "name": remote_name}
+
+                    # 2) Yelp Fusion (business)
+                    if not result and yelp_key:
+                        ok, remote_name = ext.lookup_yelp(number, default_region=app.config["DEFAULT_REGION"])
+                        if ok and remote_name:
+                            result = {"found": True, "name": remote_name}
+
+                    # 4) Twilio CNAM (if credentials present)
+                    if not result and sid and token:
+                        ok, remote_name = ext.lookup_twilio(number, default_region=app.config["DEFAULT_REGION"])
+                        if ok and remote_name:
+                            result = {"found": True, "name": remote_name}
+
+                    # 5) NumVerify (best-effort hints)
+                    if not result and numverify_key:
+                        ok, hint = ext.lookup_numverify(number, default_region=app.config["DEFAULT_REGION"])
+
+                    # If still no exact name, return metadata
+                    if not result:
                         result = {"found": False}
+                        meta = get_number_info(number, default_region=app.config["DEFAULT_REGION"])
+                        result["meta"] = meta
 
         return render_template("index.html", result=result, hint=hint, error=error, number=number)
 

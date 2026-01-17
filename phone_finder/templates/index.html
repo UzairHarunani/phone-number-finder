@@ -36,6 +36,19 @@
           {% elif hint is none %}
             <p>No external hint available.</p>
           {% endif %}
+          {% if result.meta %}
+            <h3>Number info</h3>
+            <ul>
+              {% for key in ["normalized","is_valid","is_possible","region","description","carrier","line_type","timezones"] %}
+                {% if result.meta.get(key) %}
+                  <li><strong>{{ key.replace('_',' ').title() }}:</strong> {{ result.meta.get(key) }}</li>
+                {% endif %}
+              {% endfor %}
+              {% if result.meta.get('error') %}
+                <li style="color:#900"><strong>Error:</strong> {{ result.meta.error }}</li>
+              {% endif %}
+            </ul>
+          {% endif %}
         {% endif %}
       </div>
     {% endif %}
