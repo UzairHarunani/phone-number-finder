@@ -24,7 +24,16 @@
     {% if error %}
       <div class="result" style="color: #900">{{ error }}</div>
     {% endif %}
-
+    {% if result %}
+      <div class="result">
+        {% if result.found %}
+          <p>Found: <strong>{{ result.name }}</strong></p>
+        {% else %}
+          <p>No local match found.</p>
+          {% if hint %}
+            <p>External hint: {{ hint }}</p>
+          {% elif hint is none %}
+            <p>No external hint available.</p>
 
           {% endif %}
           {% if result.meta %}
