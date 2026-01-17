@@ -11,7 +11,8 @@ def create_app(test_config=None):
     app = Flask(__name__, template_folder=templates_dir)
 
     app.config.from_mapping(
-        CONTACTS_PATH=os.environ.get("CONTACTS_PATH", os.path.join(os.getcwd(), "sample_contacts.csv")),
+        # If CONTACTS_PATH is not set, we will not attempt local CSV lookups.
+        CONTACTS_PATH=os.environ.get("CONTACTS_PATH", ""),
         DEFAULT_REGION=os.environ.get("DEFAULT_REGION", "US"),
     )
 
@@ -27,11 +28,13 @@ def create_app(test_config=None):
 
         if request.method == "POST":
             number = (request.form.get("number") or "").strip()
-            try:
-                contacts = load_contacts_csv(app.config["CONTACTS_PATH"], default_region=app.config["DEFAULT_REGION"])
-            except FileNotFoundError:
-                contacts = {}
-                error = f"Contacts file not found: {app.config['CONTACTS_PATH']}"
+            contacts = {}
+            if app.config.get("CONTACTS_PATH"):
+                try:
+                    contacts = load_contacts_csv(app.config["CONTACTS_PATH"], default_region=app.config["DEFAULT_REGION"])
+                except FileNotFoundError:
+                    contacts = {}
+                    error = f"Contacts file not found: {app.config['CONTACTS_PATH']}"
 
             if not error:
                 name = find_name_local(number, contacts, default_region=app.config["DEFAULT_REGION"])

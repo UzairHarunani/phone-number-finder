@@ -10,7 +10,7 @@ from .lookup import load_contacts_csv, find_name_local, ExternalLookup, get_numb
 def main(argv: Optional[list] = None) -> int:
     parser = argparse.ArgumentParser(prog="phone-finder")
     parser.add_argument("--number", required=True, help="Phone number to lookup")
-    parser.add_argument("--contacts", default="sample_contacts.csv", help="Path to CSV contacts (name,phone)")
+    parser.add_argument("--contacts", default=None, help="Path to CSV contacts (name,phone). If omitted no local contacts will be used.")
     parser.add_argument("--region", default="US", help="Default region for parsing numbers (e.g. US, GB)")
     parser.add_argument("--use-numverify", action="store_true", help="Attempt a NumVerify lookup if NUMVERIFY_API_KEY is set")
     parser.add_argument("--use-twilio", action="store_true", help="Attempt a Twilio Lookup (caller-name) if TWILIO_ACCOUNT_SID/TWILIO_AUTH_TOKEN are set")
@@ -19,16 +19,20 @@ def main(argv: Optional[list] = None) -> int:
     parser.add_argument("--use-opencorporates", action="store_true", help="Attempt an OpenCorporates company lookup if OPENCORPORATES_API_KEY is set")
     args = parser.parse_args(argv)
 
-    try:
-        contacts = load_contacts_csv(args.contacts, default_region=args.region)
-    except FileNotFoundError:
-        print(f"Contacts file not found: {args.contacts}")
-        return 2
+    contacts = {}
+    if args.contacts:
+        try:
+            contacts = load_contacts_csv(args.contacts, default_region=args.region)
+        except FileNotFoundError:
+            print(f"Contacts file not found: {args.contacts}")
+            return 2
 
-    name = find_name_local(args.number, contacts, default_region=args.region)
-    if name:
-        print(f"Found locally: {name}")
-        return 0
+    # Try local contacts only if provided
+    if contacts:
+        name = find_name_local(args.number, contacts, default_region=args.region)
+        if name:
+            print(f"Found locally: {name}")
+            return 0
 
     if args.use_twilio:
         sid = os.environ.get("TWILIO_ACCOUNT_SID")
