@@ -4,7 +4,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Phone Number Finder</title>
+  <title>Phone Number Finder</title>
+  <!-- Favicon: prefer a static file at /static/images.png if you add one. -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images.png') }}" />
+  <!-- Inline data-URI fallback (tiny blue circle) so the tab has an icon immediately. -->
+  <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAe1BMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////9Qf3zGAAAAL3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAlJicoKSorLC0uLzAxMjM0NQAAAF1JREFUGNNjYMAKGBiYmBiYGBgYGBkYmDgYGBgYGBgYGBgYGJgYGBg4GJgYGBgYGJg4GNgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAGs0Gk5/n9OgAAAABJRU5ErkJggg==" />
     <style>
       body { font-family: Arial, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
       label { display:block; margin-bottom: .25rem; }
