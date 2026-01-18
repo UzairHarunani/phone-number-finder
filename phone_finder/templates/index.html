@@ -30,8 +30,9 @@
       header.app-header{display:flex; align-items:center; gap:12px; margin-bottom:1rem}
       header.app-header h1{margin:0;font-size:1.25rem}
       .card{background:var(--card); border-radius:12px; box-shadow:0 6px 18px rgba(15,23,42,0.06); padding:1.25rem}
-      form.lookup{display:flex; gap:8px; align-items:center}
-      .lookup .field{flex:1}
+  form.lookup{display:flex; gap:8px; align-items:flex-start}
+  .lookup .field{flex:1}
+  .lookup .actions{display:flex;align-items:flex-end;margin-left:10px;margin-top:8px}
       label{display:block; font-size:.9rem; color:var(--muted); margin-bottom:.35rem}
       input[type="text"]{width:100%; padding:.6rem .75rem; border:1px solid #e6e9ee; border-radius:8px; font-size:1rem}
       button[type="submit"]{background:var(--accent); color:white; border:none; padding:.6rem .9rem; border-radius:8px; cursor:pointer; font-weight:600}
@@ -64,7 +65,7 @@
             <label for="number">Phone number</label>
             <input id="number" name="number" type="text" placeholder="+1 415 555 2671" value="{{ number|e }}" required />
           </div>
-          <div style="display:flex;align-items:flex-end">
+          <div class="actions">
             <button type="submit">Lookup</button>
           </div>
         </form>
@@ -95,9 +96,6 @@
           {% endif %}
         {% endif %}
       </div>
-      <footer>
-        Tip: add an optional contacts CSV by setting <code>CONTACTS_PATH</code> if you want local matches.
-      </footer>
     </div>
     {% endif %}
   </body>
