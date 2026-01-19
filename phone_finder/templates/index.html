@@ -9,6 +9,9 @@
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images.png') }}" />
   <!-- Inline data-URI fallback (tiny blue circle) so the tab has an icon immediately. -->
   <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAAe1BMVEUAAAD///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////9Qf3zGAAAAL3RSTlMAAQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAlJicoKSorLC0uLzAxMjM0NQAAAF1JREFUGNNjYMAKGBiYmBiYGBgYGBkYmDgYGBgYGBgYGBgYGJgYGBg4GJgYGBgYGJg4GNgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGAAGs0Gk5/n9OgAAAABJRU5ErkJggg==" />
+  <!-- Web App Manifest (PWA) -->
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <meta name="theme-color" content="#2563eb" />
     <style>
       :root{
         --bg:#f6f8fb;
@@ -102,5 +105,17 @@
       </div>
     </div>
     {% endif %}
+  <script>
+    // Register service worker for PWA functionality
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/static/sw.js').then(function(reg) {
+          // registered
+        }).catch(function(err) {
+          // registration failed
+        });
+      });
+    }
+  </script>
   </body>
 </html>
