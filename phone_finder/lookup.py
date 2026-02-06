@@ -10,7 +10,7 @@ from phonenumbers import timezone as _timezone
 import requests
 
 
-def normalize_number(number: str, default_region: str = "US") -> str:
+def normalize_number(number: str, default_region: str = "TZ") -> str:
     """Parse and return an E.164 formatted phone number.
 
     Raises ValueError if the number cannot be parsed.
@@ -25,7 +25,7 @@ def normalize_number(number: str, default_region: str = "US") -> str:
         raise ValueError(f"Could not parse phone number '{number}': {e}")
 
 
-def load_contacts_csv(path: str, phone_column: str = "phone", name_column: str = "name", default_region: str = "US") -> Dict[str, str]:
+def load_contacts_csv(path: str, phone_column: str = "phone", name_column: str = "name", default_region: str = "TZ") -> Dict[str, str]:
     """Load contacts from a CSV file and return a mapping of normalized phone -> name.
 
     CSV must contain headers. Rows with unparseable numbers are skipped.
@@ -52,7 +52,7 @@ def load_contacts_csv(path: str, phone_column: str = "phone", name_column: str =
     return contacts
 
 
-def find_name_local(number: str, contacts: Dict[str, str], default_region: str = "US") -> Optional[str]:
+def find_name_local(number: str, contacts: Dict[str, str], default_region: str = "TZ") -> Optional[str]:
     """Find a name in the provided contacts mapping for the given phone number.
 
     Returns the name if found, otherwise None.
@@ -77,7 +77,7 @@ class ExternalLookup:
         self.twilio_sid = twilio_sid
         self.twilio_token = twilio_token
 
-    def lookup_numverify(self, number: str, default_region: str = "US") -> Tuple[bool, Optional[str]]:
+    def lookup_numverify(self, number: str, default_region: str = "TZ") -> Tuple[bool, Optional[str]]:
         """Query NumVerify (if key provided).
 
         Returns (success, hint). Note: NumVerify does not return a person's name; this returns carrier/line type hints.
@@ -107,7 +107,7 @@ class ExternalLookup:
         except Exception:
             return False, None
 
-    def lookup_twilio(self, number: str, default_region: str = "US") -> Tuple[bool, Optional[str]]:
+    def lookup_twilio(self, number: str, default_region: str = "TZ") -> Tuple[bool, Optional[str]]:
         """Query Twilio Lookup API for caller-name (if credentials provided).
 
         Returns (success, name) where name is the caller name if Twilio returns it.
@@ -118,7 +118,7 @@ class ExternalLookup:
         if not sid or not token:
             return False, None
 
-    def lookup_yelp(self, number: str, default_region: str = "US") -> Tuple[bool, Optional[str]]:
+    def lookup_yelp(self, number: str, default_region: str = "TZ") -> Tuple[bool, Optional[str]]:
         """Query Yelp Fusion Phone Search for businesses matching the phone number.
 
         Requires YELP_API_KEY in env or passed as part of the object's construction.
@@ -149,7 +149,7 @@ class ExternalLookup:
         except Exception:
             return False, None
 
-    def lookup_google(self, number: str, default_region: str = "US") -> Tuple[bool, Optional[str]]:
+    def lookup_google(self, number: str, default_region: str = "TZ") -> Tuple[bool, Optional[str]]:
         """Query Google Places 'Find Place' by phone number.
 
         Requires GOOGLE_MAPS_API_KEY in env. Returns (success, place_name) where place_name
@@ -159,7 +159,7 @@ class ExternalLookup:
         if not api_key:
             return False, None
 
-    def lookup_opencorporates(self, number: str, default_region: str = "US") -> Tuple[bool, Optional[str]]:
+    def lookup_opencorporates(self, number: str, default_region: str = "TZ") -> Tuple[bool, Optional[str]]:
         """Query OpenCorporates companies search for the phone number.
 
         OpenCorporates doesn't have a dedicated phone-search endpoint, but their
@@ -238,7 +238,7 @@ class ExternalLookup:
             return False, None
 
 
-def get_number_info(number: str, default_region: str = "US") -> Dict[str, Optional[str]]:
+def get_number_info(number: str, default_region: str = "TZ") -> Dict[str, Optional[str]]:
     """Return free metadata for a phone number using the phonenumbers library.
 
     Returns a dict with keys: normalized, is_valid, is_possible, region, description,
