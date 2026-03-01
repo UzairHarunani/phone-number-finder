@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>View location</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>#map{height:80vh;width:100%;max-width:1000px;margin:0 auto}</style>
+</head>
+<body>
+  <main style="padding:16px">
+    {% if not found %}
+      <p>No location found for that identifier.</p>
+    {% else %}
+      <h2>Last location for {{ identifier }}</h2>
+      <p>Accuracy: {{ accuracy }} m — at {{ ts }}</p>
+      <div id="map"></div>
+
+      {# Embed JSON data in a separate script tag so main JS stays valid JS #}
+      <script id="loc-data" type="application/json">
+        {{ {"lat": lat, "lon": lon, "accuracy": accuracy, "ts": ts}|tojson }}
+      </script>
+    {% endif %}
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // Editor-friendly JS: no Jinja control tags inside this script
+    document.addEventListener('DOMContentLoaded', function () {
+      const dataEl = document.getElementById('loc-data');
+      if (!dataEl) return; // no data => nothing to render
+
+      let data = null;
+      try {
+        data = JSON.parse(dataEl.textContent);
+      } catch (e) {
+        console.warn('Failed to parse location data', e);
+        return;
+      }
+
+      const lat = Number(data.lat);
+      const lon = Number(data.lon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+        console.warn('Invalid coordinates', data);
+        document.getElementById('map').textContent = 'Invalid or missing coordinates.';
+        return;
+      }
+
+      const map = L.map('map').setView([lat, lon], 16);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+      L.marker([lat, lon]).addTo(map).bindPopup("Last reported location").openPopup();
+    });
+  </script>
+</body>
+</html>
