@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, current_app, url_for
+from flask import Flask, render_template, request, jsonify, current_app, url_for, redirect
 import os
 import sqlite3
 from datetime import datetime
@@ -41,7 +41,27 @@ def create_app(test_config=None):
 
     @app.route("/")
     def index():
-        return render_template("index.html")
+        # Accept form POST from the UI and redirect to a GET with the number
+        if request.method == "POST":
+            # form field name used in the page is "number"
+            number = None
+            if request.form:
+                number = request.form.get("number")
+            elif request.is_json:
+                try:
+                    number = request.get_json().get("number")
+                except Exception:
+                    number = None
+            if number:
+                return redirect(url_for("index", number=number))
+            return redirect(url_for("index"))
+
+        # GET: if ?number= is present, pass it into the template (template may handle lookup)
+        number = request.args.get("number")
+        context = {}
+        if number:
+            context["query_number"] = number
+        return render_template("index.html", **context)
 
     @app.route("/track", methods=["GET"])
     def track():
